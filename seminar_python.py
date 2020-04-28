@@ -35,6 +35,13 @@ for i in range(N):
     Ji.append(J)
     k = k0*eul**(1 - 0.3*i)
     kti.append(k)
+    
+MasMx = np.zeros((N,N),float)
+
+for i in range(N):
+    MasMx[i][i] = MasMx[i][i] + J[i][i]
+
+print(MasMx[1][1])
 
 # =============================================================================
 # Definicija funkcij
