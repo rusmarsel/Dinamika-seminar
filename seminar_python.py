@@ -19,14 +19,14 @@ from scipy.integrate import solve_ivp
 J0 = 0.7    # [kgm^2]
 k0 = 1300   # [Nm/rad]
 M0 = 1150   # [Nm]
-N = 6       # [/]
+N = 32      # [/]
 T = 0.17    # [s]
 t0 = 1.28   # [s]
 tk = 4.22   # [s]
 
 # Fourirjeva aproksimacija funkcije momenta:
-n_max = 200  # [/]
-# t = 10;     # [s]
+n_max = 300  # [/]
+
 
 # Omega
 
@@ -35,9 +35,12 @@ w = 2*np.pi/T
 # Časovni intervali
 
 t_min = 0       # [s]
-t_max = 2*T     # [s]
-dt = 0.001     # [s]
+t_max = 3*T     # [s]
+dt = 0.001      # [s]
+dt_d = .001     # [s]
+t_d = 3*T       # [s]
 
+t_vec = np.arange(t_min,t_d,dt_d)
 t_array = np.arange(t_min, t_max, dt)
 t_impulz = np.arange(t_min, t0, dt)
 
@@ -154,8 +157,8 @@ def moment2(t,T,M0, show = False):
 # Grafičen izris funkcij
 # =============================================================================
 
-moment1(t, t0, M0, show = False)
-moment2(t, T, M0, show = False)
+moment1(t_array, t0, M0, show = False)
+moment2(t_array, T, M0, show = False)
 
 # =============================================================================
 # =============================================================================
@@ -170,10 +173,7 @@ las_vr = np.sort(EIG)
 for i in range(N):
     # Izračun lastnih frekvenc sistema
     root = np.sqrt(las_vr[i])
-    las_frek.append(root)
-
-
-# print(las_frek)
+    las_frek.append(root/(2*np.pi))
 
 
 for j in range(N):
@@ -281,135 +281,97 @@ def primerjava(t, moment2, a_j, b_j, w, show = False):
         plt.grid()
         plt.legend(loc="upper right")
         plt.show()
+        
+    return M_approx
     
+
+# def mom_four(t, b_j):
+#     M_four = np.ones_like(t_array) 
     
-def mom_four(t, b_j):
-    M_four = np.ones_like(t_array) 
+#     for j in range(len(b_j+1)):
+#         if j==0:
+#             M_four *= 0
+#         else:
+#             M_four += b_j[j]*np.sin(j*w*t)
     
-    for j in range(len(b_j+1)):
+#     return M_four[n_max]
+
+def mom_four(t, a_j, b_j, show=False):
+    M_four = np.ones_like(moment2) 
+    
+    for j in range(len(a_j+1)):
         if j==0:
-            M_four *= 0
+            M_four *= a_j[j]/2 
         else:
-            M_four += b_j[j]*np.sin(j*w*t)
+            M_four += a_j[j]*np.cos(j*w*t) + b_j[j]*np.sin(j*w*t)
+            
+    if show:
+        plt.figure()
+        plt.plot(t_array, M_four)
+        plt.show()
     
     return M_four
     
 # Eksaktna funkcija vzbujevalnega momenta
-M_exact = moment2(t, T, M0, show = False)  # Za prikaz -> show = True
+M_exact = moment2(t_array, T, M0, show = False)  # Za prikaz -> show = True
 
 a_j, b_j = koef_bj(M0, n_max)
 
 primerjava(t_array, M_exact, a_j, b_j, w, show = False)  # Za prikaz -> show = True
 
 
-# plt.figure()
-# plt.plot(t_array, mom_four(t_array, b_j))
-
-def beta(N, n_max):
-        
-    Beta = np.ones(N)
+def vectorfield(t, y, N, a_j, b_j, M_modalna, K_modalna):
+    eta = []
     
     for i in range(N):
-        for j in range(n_max):
+        # Pripišemo pomike sistema:
+        eta.append(y[2*i])
+    
+    np.array(eta)
+    
+    # Zapis vektorja momentov (zunanje obremenitve)
+    moment = np.zeros((N,1))
+    moment[0,0] = mom_four(t, a_j, b_j) # Vrednost momenta, aproksimiranega s fourirjevimi vrstami, pri času t
+    moment[1,0] = mom_four(t, a_j, b_j)
+    
+    DD = np.transpose(moment) - np.transpose(np.dot(K_modalna, np.transpose(eta)))
+    M_mod_inv = np.linalg.inv(M_modalna)
+    
+    dy = []
+    
+    z = 0
+    
+    for i in range(2*N):
+        if i % 2 == 0: # Pripis prvega ali drugega odvoda, glede na vrednost i
+            dy.append(y[i+1])
+        else:
+            dy.append(np.dot(M_mod_inv, np.transpose(DD))[z])
+            z += 1
             
-            Beta[i] += 1/(1-((j*w)/las_frek[i])**2)
+    return dy 
+
+
+params = (N, a_j, b_j, K_modalna, M_modalna) # vhodni parametri
+
+init_vals = []
+for i in range(2*N):
+    init_vals.append(0)
+
+rez = solve_ivp(vectorfield, [t_vec[0], t_vec[-1]], init_vals, args=params, t_eval=t_vec)
+
+
+ta = rez.t
+odz = 0
+odz = rez.y[0,:]
+# for i in range(N):
+#     odz += rez.y[(i*2),:]
+      
+# print(odz)
+plt.figure()
+plt.plot(ta, (180/np.pi)*(odz), label="Prikaz odziva")
+plt.xlabel('Čas [s]')
+plt.ylabel('Zasuk [°]')
+plt.grid()
+plt.legend(loc="upper right")
+plt.show()
         
-    return Beta
-
-
-def X_3(N, b_j, n_max):
-    
-    X = np.ones(N) 
-    
-    for i in range(N):
-        for j in range(n_max):            
-            X[i] += b_j[j] / (MasMx[i,i]*(las_frek[i])**2)
-    
-    return X
-
-
-def odziv(t, n_max, N, X_3, beta):
-    
-    Beta = beta(N,n_max)
-    X3 = X_3(N, b_j,n_max)
-    
-    odz = np.ones_like(t_array) 
-    
-    for i in range(N):
-        for j in range(n_max):
-            odz += np.sin(j*w*t)*Beta[i]*X3[i]*np.sin(j*w*t)
-    
-        plt.figure()
-        plt.plot(t, odz)
-        plt.show()
-    return odz
-        
-odziv(t_array, n_max, N, X_3, beta)
-
-# Beta = beta(N,n_max)
-# X3 = X_3(N, b_j,n_max)
-# print(Beta[0]*X3[0]*np.sin(1*w*t_array[1]))
-
-# X = X_3(N, b_j, n_max)
-# beta_1 = beta(N, n_max)
-
-# print(X[0]*beta_1[0])
-
-# def Odziv(N, n_max, moment2, beta):
-    
-#     Od = np.ones((len(t_array), N))
-    
-#     for i in range(N):
-#         for j in range(n_max):
-            
-#             Od[i] += beta 
-        
-#     return Od
-
-
-
-# def g_t(t, M_vzb_modalna, mom_four):
-#     M_x = mom_four(t, b_j)
-#     mod_m = M_vzb_modalna(N)
-#     return mod_m * M_x[n_max]
-
-# print(g_t(0.1,M_vzb_modalna, mom_four))
-
-
-# def eta(t, N):
-    
-#     phi_i = np.ones(N)
-    
-#     for i in range(N):
-#         G = g_t(t, M_vzb_modalna, mom_four)[i,0]
-#         B = Beta[i]
-#         OM = las_vr[i]
-#         masa = M_modalna[i,i]
-#         # print(B)
-        
-#         phi_i[i] = (180/np.pi)*np.sin(w*t)*(((G/masa) * B)/OM)
-
-#     return phi_i
-    
-# Eta = eta(t_array, N)
-# print(t)
-# print(fi_last, "\n")
-# print(Eta, "\n")
-# print(np.matmul(fi_last, Eta))
-       
-# plt.figure()
-# plt.plot(t_array, phi_i)
-            
-
-
-
-# b_j[j]*Beta[i]
-
-
-# plt.figure()
-# plt.plot(t_array, mom_four(t_array, b_j, w))
-
-
-    
-# def g_t(fi_last, mom_four):
-#     np.transpose(fi_last)
