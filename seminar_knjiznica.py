@@ -9,10 +9,11 @@ import numpy as np
 
 from sympy import *
 
+m11=
 M0 = 1150   # [Nm]
 T = 0.17    # [s]
 w = 2*np.pi/T
-cleni = 50
+# cleni = 50
 
 a, b, t, tau, M, omega, j = symbols('a, b, t, tau, M, omega, j')
 
@@ -48,13 +49,14 @@ f_mom2 = 2*M0*(t/tau) - 2*M0
    
 I_1 = integrate(f_mom1*sin(j*2*np.pi/T*t), (t, a, b))
 I_2 = integrate(f_mom2*sin(j*2*np.pi/T*t), (t, a, b))
-podatki = {a: 0, b: T/2, tau: T, M: M0}
-podatki2 = {a: T/2, b: T, tau: T, M: M0}
-I1_analiticno = I_1.subs(podatki).evalf() 
-I2_analiticno = I_2.subs(podatki2).evalf()   
+# podatki = {a: 0, b: T/2, tau: T, M: M0}
+# podatki2 = {a: T/2, b: T, tau: T, M: M0}
+# I1_analiticno = I_1.subs(podatki).evalf() 
+# I2_analiticno = I_2.subs(podatki2).evalf()   
 # print(I1_analiticno)
 # print(I2_analiticno)
-b_j = (2/T)*(I1_analiticno + I2_analiticno)
+# b_j = (2/T)*(I1_analiticno + I2_analiticno)
+bj1 = (2/T)*(I1_analiticno + I2_analiticno)
 
 
 print(b_j)
@@ -62,7 +64,7 @@ print(b_j)
 # Vzamem samo uporabne j-je, ki so med 0 in N. Ta člen nesem tudi v glavni program.
 b_j = 11.7647058823529*((-31.1147913744655*cos(3.14159265358979*j)/j + 9.90414570103852*sin(3.14159265358979*j)/j**2)+(-31.1147913744655*cos(3.14159265358979*j)/j - 9.90414570103852*sin(3.14159265358979*j)/j**2 + 9.90414570103852*sin(6.28318530717959*j)))
 
-
+bj1 =
 
 # print(moment1(t_h,M0,t0))
 
@@ -80,5 +82,5 @@ b_j = 11.7647058823529*((-31.1147913744655*cos(3.14159265358979*j)/j + 9.9041457
 
 
 # Korak trapezne interpolacije
-h = .1
-t_h = np.linspace(0,t0,100)
+# h = .1
+# t_h = np.linspace(0,t0,100)

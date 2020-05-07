@@ -22,7 +22,7 @@ t0 = 1.28   # [s]
 tk = 4.22   # [s]
 
 # Fourirjeva aproksimacija funkcije momenta:
-n_max = 200  # [/]
+n_max = 300  # [/]
 # t = 10;     # [s]
 
 # Omega
@@ -32,17 +32,14 @@ w = 2*np.pi/T
 # Časovni intervali
 
 t_min = 0       # [s]
-<<<<<<< Updated upstream
+
 t_max = 2*T     # [s]
 dt = 0.001     # [s]
-=======
-t_max = 3*T     # [s]
-dt = 0.0001      # [s]
 
 dt_d = .0005     # [s]
 t_d = T      # [s]
->>>>>>> Stashed changes
 
+t_vec = np.arange(t_min, t_d, dt_d)
 t_array = np.arange(t_min, t_max, dt)
 t_impulz = np.arange(t_min, t0, dt)
 
@@ -159,8 +156,8 @@ def moment2(t,T,M0, show = False):
 # Grafičen izris funkcij
 # =============================================================================
 
-moment1(t, t0, M0, show = False)
-moment2(t, T, M0, show = False)
+moment1(t_array, t0, M0, show = False)
+moment2(t_array, T, M0, show = False)
 
 # =============================================================================
 # =============================================================================
@@ -176,12 +173,9 @@ for i in range(N):
     # Izračun lastnih frekvenc sistema
     root = np.sqrt(las_vr[i])
     las_frek.append(root)
-<<<<<<< Updated upstream
 
 
 # print(las_frek)
-=======
->>>>>>> Stashed changes
 
 
 for j in range(N):
@@ -289,39 +283,36 @@ def primerjava(t, moment2, a_j, b_j, w, show = False):
         plt.grid()
         plt.legend(loc="upper right")
         plt.show()
-<<<<<<< Updated upstream
+
     
     
-def mom_four(t, b_j):
-    M_four = np.ones_like(t_array) 
-=======
+# def mom_four(t, b_j):
+#     M_four = np.ones_like(t_array) 
         
-    return M_approx
+#     return M_approx
 
 
 def mom_four(t_interval, b_j, show=False):
     M_four = np.ones_like(t_interval) 
->>>>>>> Stashed changes
-    
+
+
     for j in range(len(b_j+1)):
         if j==0:
             M_four *= 0
         else:
-<<<<<<< Updated upstream
-            M_four += b_j[j]*np.sin(j*w*t)
-=======
+
             M_four += b_j[j]*np.sin(j*w*t_interval)
             
     if show:
         plt.figure()
         plt.plot(t_interval, M_four)
         plt.show()
->>>>>>> Stashed changes
+
     
     return M_four
    
 # Eksaktna funkcija vzbujevalnega momenta
-M_exact = moment2(t, T, M0, show = False)  # Za prikaz -> show = True
+M_exact = moment2(t_array, T, M0, show = False)  # Za prikaz -> show = True
 
 a_j, b_j = koef_bj(M0, n_max)
 
@@ -335,50 +326,50 @@ obremenitev = np.zeros((N,1))
 obremenitev[0,0] = 1
 obremenitev[1,0] = 1
 
-<<<<<<< Updated upstream
+
 # plt.figure()
 # plt.plot(t_array, mom_four(t_array, b_j))
 
-def beta(N, n_max):
+# def beta(N, n_max):
         
-    Beta = np.ones(N)
+#     Beta = np.ones(N)
     
-    for i in range(N):
-        for j in range(n_max):
+#     for i in range(N):
+#         for j in range(n_max):
             
-            Beta[i] += 1/(1-((j*w)/las_frek[i])**2)
+#             Beta[i] += 1/(1-((j*w)/las_frek[i])**2)
         
-    return Beta
+#     return Beta
 
 
-def X_3(N, b_j, n_max):
+# def X_3(N, b_j, n_max):
     
-    X = np.ones(N) 
+#     X = np.ones(N) 
     
-    for i in range(N):
-        for j in range(n_max):            
-            X[i] += b_j[j] / (MasMx[i,i]*(las_frek[i])**2)
+#     for i in range(N):
+#         for j in range(n_max):            
+#             X[i] += b_j[j] / (MasMx[i,i]*(las_frek[i])**2)
     
-    return X
+#     return X
 
 
-def odziv(t, n_max, N, X_3, beta):
+# def odziv(t, n_max, N, X_3, beta):
     
-    Beta = beta(N,n_max)
-    X3 = X_3(N, b_j,n_max)
+#     Beta = beta(N,n_max)
+#     X3 = X_3(N, b_j,n_max)
     
-    odz = np.ones_like(t_array) 
+#     odz = np.ones_like(t_array) 
     
-    for i in range(N):
-        for j in range(n_max):
-            odz += np.sin(j*w*t)*Beta[i]*X3[i]*np.sin(j*w*t)
+#     for i in range(N):
+#         for j in range(n_max):
+#             odz += np.sin(j*w*t)*Beta[i]*X3[i]*np.sin(j*w*t)
     
-        plt.figure()
-        plt.plot(t, odz)
-        plt.show()
-    return odz
+#         # plt.figure()
+#         # plt.plot(t, odz)
+#         # plt.show()
+#     return odz
         
-odziv(t_array, n_max, N, X_3, beta)
+# odziv(t_array, n_max, N, X_3, beta)
 
 # Beta = beta(N,n_max)
 # X3 = X_3(N, b_j,n_max)
@@ -433,8 +424,7 @@ odziv(t_array, n_max, N, X_3, beta)
        
 # plt.figure()
 # plt.plot(t_array, phi_i)
-            
-=======
+
 
 def breme (t_int, P_S):
     '''Izračuna obremenitev v časovnem intervalu za vsako prostostno stopnjo'''
@@ -526,17 +516,17 @@ mo[1,0] = 1
 
 m_mo = np.dot(np.transpose(fi_last), mo)
 # print(m_mo)
-m_mo = np.dot(np.linalg.inv(M_modalna),m_mo)
+m_mo = np.dot(np.linalg.inv(MasMx),m_mo)
     
 def b_jt(t, P_S):
     bj = np.ones_like(t)
     for i in range(n_max):
         bj += b_j[i]*np.sin(j*w*t)*m_mo[P_S]
->>>>>>> Stashed changes
+
 
     bj = bj/las_vr[P_S]        
     return bj
-bhh = b_jt(t_array, 0)
+# bhh = b_jt(t_array, 0)
 # sin_fi_t(t_array, 0, show=True)
 
 # print(beta_j(5))
@@ -561,14 +551,14 @@ def eta_t(t, beta_j, sin_fi_t, h_i_t):
         # plt.show()
     return eta
 
-<<<<<<< Updated upstream
+
 
 # b_j[j]*Beta[i]
 
 
 # plt.figure()
 # plt.plot(t_array, mom_four(t_array, b_j, w))
-=======
+
 # ajx  = eta_t(t_vec, beta_j, sin_fi_t, h_i_t)
 
 x_t = np.ones((N,len(t_vec)))
@@ -605,15 +595,14 @@ for i in range(N):
 #     # print(M_four)
 #     return M_four
 
->>>>>>> Stashed changes
 
 # # m_f_trenutni(0.083, b_j)
 
-<<<<<<< Updated upstream
+
     
 # def g_t(fi_last, mom_four):
 #     np.transpose(fi_last)
-=======
+
 
 # def h_tren(t, b_j, P_S):
 #     '''Izračun vrednosti momenta pri času t'''    
@@ -791,4 +780,4 @@ for i in range(N):
 
     
     #define matrix A according to devised equilibrium eqs
->>>>>>> Stashed changes
+
